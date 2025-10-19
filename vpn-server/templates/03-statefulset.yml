@@ -1,0 +1,159 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: "{{ .Release.Name }}-vpn-server"
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/managed-by: "Helm"
+    meta.helm.sh/release-name: {{ .Release.Name }}
+    meta.helm.sh/release-namespace: {{ .Release.Namespace }}
+spec:
+  replicas: {{ .Values.statefulset.replicas }}
+  serviceName: "{{ .Release.Name }}-headless-vpn-service"
+  selector:
+    matchLabels:
+      app: "{{ .Release.Name }}-vpnserver"
+  template:
+    metadata:
+      labels:
+        app: "{{ .Release.Name }}-vpnserver"
+    spec:
+      initContainers:
+      - name: openvpn-init
+        image: kylemanna/openvpn:latest
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: EASYRSA_BATCH
+          value: "1"
+        - name: EASYRSA_REQ_CN
+          value: "{{ .Values.externalHost }}"
+        - name: EASYRSA_ALGO
+          value: "ec"
+        - name: EASYRSA_DIGEST
+          value: "sha512"
+        command: ["sh", "-c"]
+        args:
+          - |
+            if [ -f /etc/openvpn/pki/ca.crt ];then
+              echo "PKI already exists, skipping generation..."
+              exit 0
+            else
+              ovpn_genconfig -u "udp://{{ .Values.externalHost }}" -n 192.168.255.1 &&
+              ovpn_initpki nopass
+            fi
+        volumeMounts:
+        - name: "{{ .Release.Name }}-openvpn-storage"
+          mountPath: /etc/openvpn
+      dnsPolicy: None
+      dnsConfig:
+        nameservers:
+          - 127.0.0.1
+          - 1.1.1.1
+        options:
+          - name: ndots
+            value: "2"
+      containers:
+      - name: openvpn
+        image: kylemanna/openvpn:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 1194
+          protocol: UDP
+        resources:
+          requests:
+            memory: {{ .Values.statefulset.containers.openvpn.resources.requests.memory }}
+            cpu: {{ .Values.statefulset.containers.openvpn.resources.requests.cpu }}
+          limits:
+            memory: {{ .Values.statefulset.containers.openvpn.resources.limits.memory }}
+            cpu: {{ .Values.statefulset.containers.openvpn.resources.limits.cpu }}
+        volumeMounts:
+        - name: "{{ .Release.Name }}-openvpn-storage"
+          mountPath: /etc/openvpn
+        securityContext:
+          capabilities:
+            add:
+              - NET_ADMIN
+      - name: pihole
+        image: pihole/pihole:latest
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: FTLCONF_webserver_api_password
+          value: '{{ .Values.statefulset.containers.pihole.env.FTLCONF_webserver_api_password }}'
+        - name: TZ
+          value: '{{ .Values.statefulset.containers.pihole.env.TZ }}'
+        - name: FTLCONF_dns_upstreams
+          value: "1.1.1.1"
+        - name: FTLCONF_webserver_interface_theme
+          value: default-dark
+        - name: FTLCONF_dns_listeningMode
+          value: SINGLE
+        - name: FTLCONF_dns_interface
+          value: tun0
+        - name: FTLCONF_dns_cache_size
+          value: "10000"
+        - name: FTLCONF_dns_rateLimit_count
+          value: "1000"
+        - name: FTLCONF_dns_rateLimit_interval
+          value: "60"
+        - name: FTLCONF_dns_ignoreLocalhost
+          value: "false"
+        - name: FTLCONF_dns_domain
+          value: local
+        - name: FTLCONF_debug_api
+          value: "false"
+        - name: FTLCONF_files_gravity
+          value: /etc/pihole/db/gravity.db
+        resources:
+          requests:
+            memory: {{ .Values.statefulset.containers.pihole.resources.requests.memory }}
+            cpu: {{ .Values.statefulset.containers.pihole.resources.requests.cpu }}
+          limits:
+            memory: {{ .Values.statefulset.containers.pihole.resources.limits.memory }}
+            cpu: {{ .Values.statefulset.containers.pihole.resources.limits.cpu }}
+        volumeMounts:
+        - name: "{{ .Release.Name }}-pihole-data"
+          mountPath: /etc/pihole/db
+          subPath: databases
+        - name: "{{ .Release.Name }}-pihole-data"
+          mountPath: /etc/pihole
+          subPath: config
+        - name: "{{ .Release.Name }}-pihole-data"
+          mountPath: /etc/dnsmasq.d
+          subPath: dnsmasq
+        - name: "{{ .Release.Name }}-pihole-setup"
+          mountPath: /home/pihole/
+        livenessProbe:
+          failureThreshold: 3
+          timeoutSeconds: 5
+          httpGet:
+            path: /admin
+            port: http
+        readinessProbe:
+          failureThreshold: 3
+          timeoutSeconds: 5
+          httpGet:
+            path: /admin
+            port: http
+        ports:
+        - containerPort: 80
+          name: http
+          protocol: TCP
+        - containerPort: 53
+          name: dns-tcp
+          protocol: TCP
+        - containerPort: 53
+          name: dns-udp
+          protocol: UDP
+      volumes:
+      - name: "{{ .Release.Name }}-openvpn-storage"
+        persistentVolumeClaim:
+          claimName: "{{ .Release.Name }}-openvpn-pvc"
+      - name: "{{ .Release.Name }}-pihole-data"
+        persistentVolumeClaim:
+          claimName: "{{ .Release.Name }}-pihole-pvc"
+      - name: "{{ .Release.Name }}-pihole-setup"
+        configMap:
+          name: "{{ .Release.Name }}-pihole-setup-cm"
+      securityContext:
+        fsGroup: 1000
+        fsGroupChangePolicy: "OnRootMismatch"

@@ -1,0 +1,4 @@
+apiVersion: v2
+name: vpn-server
+description: A Helm chart for my deploying a vpn server with pihole
+version: 0.0.1

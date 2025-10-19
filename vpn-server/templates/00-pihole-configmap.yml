@@ -1,0 +1,98 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "{{ .Release.Name }}-pihole-setup-cm"
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/managed-by: "Helm"
+    meta.helm.sh/release-name: {{ .Release.Name }}
+    meta.helm.sh/release-namespace: {{ .Release.Namespace }}
+data:
+  pihole_startup.sh: |
+    #!/bin/bash
+
+    BLOCKLIST_URLS=(
+        "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts"
+        "https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/fakenews-gambling-porn/hosts"
+        "https://bitbucket.org/ethanr/dns-blacklists/raw/8575c9f96e5b4a1308f2f12394abd86d0927a4a0/bad_lists/Mandiant_APT1_Report_Appendix_D.txt"
+        "https://raw.githubusercontent.com/kboghdady/youTube_ads_4_pi-hole/master/youtubelist.txt"
+        "https://raw.githubusercontent.com/blocklistproject/Lists/master/tracking.txt"
+        "https://raw.githubusercontent.com/blocklistproject/Lists/master/malware.txt"
+        "https://raw.githubusercontent.com/blocklistproject/Lists/master/abuse.txt"
+        "https://blocklistproject.github.io/Lists/tracking.txt"
+        "https://someonewhocares.org/hosts/zero/hosts"
+        "https://gist.githubusercontent.com/unixb0y/4973fece2d5099bd53143a18a54318f3/raw/3254ebe6ebfcf1c9549d39999ed8f5e98e30e4da/hosts"
+        "https://blocklistproject.github.io/Lists/scam.txt"
+        "https://blocklistproject.github.io/Lists/ransomware.txt"
+        "https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/porn/hosts"
+        "https://raw.githubusercontent.com/blocklistproject/Lists/master/scam.txt"
+        "https://raw.githubusercontent.com/blocklistproject/Lists/master/phishing.txt"
+        "https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@main/domains/pro.txt"
+        "https://raw.githubusercontent.com/sefinek/Sefinek-Blocklist-Collection/refs/heads/main/blocklists/generated/noip/apps/discord.txt"
+        "https://raw.githubusercontent.com/sefinek/Sefinek-Blocklist-Collection/refs/heads/main/blocklists/generated/noip/apps/skype.txt"
+        "https://raw.githubusercontent.com/sefinek/Sefinek-Blocklist-Collection/refs/heads/main/blocklists/generated/noip/apps/steam-extended.txt"
+        "https://raw.githubusercontent.com/sefinek/Sefinek-Blocklist-Collection/refs/heads/main/blocklists/generated/noip/apps/steam.txt"
+        "https://raw.githubusercontent.com/sefinek/Sefinek-Blocklist-Collection/refs/heads/main/blocklists/generated/noip/dating-services/sefinek.hosts.txt"
+        "https://raw.githubusercontent.com/sefinek/Sefinek-Blocklist-Collection/refs/heads/main/blocklists/generated/noip/gambling/sefinek.hosts.txt"
+        "https://raw.githubusercontent.com/sefinek/Sefinek-Blocklist-Collection/refs/heads/main/blocklists/generated/noip/gambling/sefinek.hosts2.txt"
+        "https://raw.githubusercontent.com/sefinek/Sefinek-Blocklist-Collection/refs/heads/main/blocklists/generated/noip/phishing/sefinek.hosts.txt"
+        "https://raw.githubusercontent.com/sefinek/Sefinek-Blocklist-Collection/refs/heads/main/blocklists/generated/noip/phishing/phishing.army/blocklist-extended.fork.txt"
+        "https://raw.githubusercontent.com/sefinek/Sefinek-Blocklist-Collection/refs/heads/main/blocklists/generated/noip/phishing/blocklistproject/phishing.fork.txt"
+        "https://raw.githubusercontent.com/sefinek/Sefinek-Blocklist-Collection/refs/heads/main/blocklists/generated/noip/piracy/sefinek.hosts.txt"
+        "https://raw.githubusercontent.com/sefinek/Sefinek-Blocklist-Collection/refs/heads/main/blocklists/generated/noip/scam/sefinek.hosts.txt"
+        "https://raw.githubusercontent.com/sefinek/Sefinek-Blocklist-Collection/refs/heads/main/blocklists/generated/noip/social/facebook.txt"
+        "https://raw.githubusercontent.com/sefinek/Sefinek-Blocklist-Collection/refs/heads/main/blocklists/generated/noip/social/instagram.txt"
+        "https://raw.githubusercontent.com/sefinek/Sefinek-Blocklist-Collection/refs/heads/main/blocklists/generated/noip/social/snapchat.txt"
+        "https://raw.githubusercontent.com/sefinek/Sefinek-Blocklist-Collection/refs/heads/main/blocklists/generated/noip/social/tiktok.txt"
+        "https://raw.githubusercontent.com/sefinek/Sefinek-Blocklist-Collection/refs/heads/main/blocklists/generated/noip/social/twitter.txt"
+        "https://raw.githubusercontent.com/sefinek/Sefinek-Blocklist-Collection/refs/heads/main/blocklists/generated/noip/useless-websites/sefinek.hosts.txt"
+        "https://raw.githubusercontent.com/sefinek/Sefinek-Blocklist-Collection/refs/heads/main/blocklists/generated/noip/tracking-and-telemetry/0Zinc/easyprivacy.fork.txt"
+        "https://raw.githubusercontent.com/sefinek/Sefinek-Blocklist-Collection/refs/heads/main/blocklists/generated/noip/tracking-and-telemetry/frogeye/firstparty-trackers-hosts.txt"
+        "https://raw.githubusercontent.com/sefinek/Sefinek-Blocklist-Collection/refs/heads/main/blocklists/generated/noip/tracking-and-telemetry/ShadowWhisperer/tracking.fork.txt"
+        "https://raw.githubusercontent.com/sefinek/Sefinek-Blocklist-Collection/refs/heads/main/blocklists/generated/noip/porn/sefinek.hosts2.txt"
+        "https://raw.githubusercontent.com/sefinek/Sefinek-Blocklist-Collection/refs/heads/main/blocklists/generated/noip/porn/sefinek.hosts.txt"
+        "https://raw.githubusercontent.com/sefinek/Sefinek-Blocklist-Collection/refs/heads/main/blocklists/generated/noip/ads/sefinek.hosts.txt"
+        "https://raw.githubusercontent.com/sefinek/Sefinek-Blocklist-Collection/refs/heads/main/blocklists/generated/noip/ads/0Zinc/easylist.fork.txt"
+        "https://raw.githubusercontent.com/sefinek/Sefinek-Blocklist-Collection/refs/heads/main/blocklists/generated/noip/ads/adaway/hosts.fork.txt"
+        "https://raw.githubusercontent.com/sefinek/Sefinek-Blocklist-Collection/refs/heads/main/blocklists/generated/noip/ads/blocklistproject/hosts.fork.txt"
+        "https://raw.githubusercontent.com/sefinek/Sefinek-Blocklist-Collection/refs/heads/main/blocklists/generated/noip/ads/blocklistproject/youtube.fork.txt"
+        "https://raw.githubusercontent.com/Perflyst/PiHoleBlocklist/master/SmartTV.txt"
+        "https://raw.githubusercontent.com/Perflyst/PiHoleBlocklist/master/AmazonFireTV.txt"
+        "https://blocklistproject.github.io/Lists/alt-version/smart-tv-nl.txt"
+        "https://raw.githubusercontent.com/hkamran80/blocklists/main/smart-tv.txt"
+        "https://raw.githubusercontent.com/mboutolleau/block-samsung-tv-telemetry/refs/heads/master/samsung_tv_telemetry_urls.txt"
+        "https://www.github.developerdan.com/hosts/lists/ads-and-tracking-extended.txt"
+        "https://raw.githubusercontent.com/hagezi/dns-blocklists/refs/heads/main/hosts/doh-compressed.txt"
+        "https://raw.githubusercontent.com/hagezi/dns-blocklists/refs/heads/main/hosts/doh.txt"
+        "https://raw.githubusercontent.com/hagezi/dns-blocklists/refs/heads/main/hosts/multi.txt"
+        "https://raw.githubusercontent.com/hagezi/dns-blocklists/refs/heads/main/hosts/light.txt"
+        "https://raw.githubusercontent.com/hagezi/dns-blocklists/refs/heads/main/hosts/native.amazon.txt"
+        "https://raw.githubusercontent.com/hagezi/dns-blocklists/refs/heads/main/hosts/native.apple.txt"
+        "https://raw.githubusercontent.com/hagezi/dns-blocklists/refs/heads/main/hosts/ultimate.txt"
+        "https://raw.githubusercontent.com/hagezi/dns-blocklists/refs/heads/main/hosts/tif.txt"
+        "https://raw.githubusercontent.com/hagezi/dns-blocklists/refs/heads/main/hosts/pro.txt"
+        "https://raw.githubusercontent.com/hagezi/dns-blocklists/refs/heads/main/hosts/pro.plus.txt"
+        "https://raw.githubusercontent.com/hagezi/dns-blocklists/refs/heads/main/hosts/native.xiaomi.txt"
+        "https://raw.githubusercontent.com/hagezi/dns-blocklists/refs/heads/main/hosts/native.winoffice.txt"
+        "https://raw.githubusercontent.com/hagezi/dns-blocklists/refs/heads/main/hosts/native.vivo.txt"
+        "https://raw.githubusercontent.com/hagezi/dns-blocklists/refs/heads/main/hosts/native.tiktok.txt"
+        "https://raw.githubusercontent.com/hagezi/dns-blocklists/refs/heads/main/hosts/native.tiktok.extended.txt"
+        "https://raw.githubusercontent.com/hagezi/dns-blocklists/refs/heads/main/hosts/native.samsung.txt"
+        "https://raw.githubusercontent.com/hagezi/dns-blocklists/refs/heads/main/hosts/native.roku.txt"
+        "https://raw.githubusercontent.com/hagezi/dns-blocklists/refs/heads/main/hosts/native.oppo-realme.txt"
+        "https://raw.githubusercontent.com/hagezi/dns-blocklists/refs/heads/main/hosts/native.lgwebos.txt"
+        "https://raw.githubusercontent.com/hagezi/dns-blocklists/refs/heads/main/hosts/native.huawei.txt"
+        "https://adaway.org/hosts.txt"
+    )
+
+    apk add sqlite
+
+    # Loop through each URL and add it to Pi-hole
+    for URL in "${BLOCKLIST_URLS[@]}"; do
+        echo "Adding blocklist: $URL"
+        sqlite3 /etc/pihole/db/gravity.db "INSERT INTO adlist (address, enabled, comment) VALUES (\"$URL\", 1, 'comment');"
+    done
+
+    # Update gravity to apply changes
+    echo "Updating gravity..."
+    pihole -g

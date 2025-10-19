@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: "{{ .Release.Name }}-openvpn-pvc"
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/managed-by: "Helm"
+    meta.helm.sh/release-name: {{ .Release.Name }}
+    meta.helm.sh/release-namespace: {{ .Release.Namespace }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+

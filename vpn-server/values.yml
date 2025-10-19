@@ -1,0 +1,32 @@
+externalHost:
+
+statefulset:
+  replicas: 1
+  containers:
+    openvpn:
+      resources:
+        requests:
+          memory: 128Mi
+          cpu: 100m
+        limits:
+          memory: 128Mi
+          cpu: 500m
+
+    pihole:
+      env:
+        TZ: Europe/Berlin
+        FTLCONF_webserver_api_password: please change me
+      resources:
+        requests:
+          memory: 128Mi
+          cpu: 100m
+        limits:
+          memory: 256Mi
+          cpu: 500m
+
+service:
+  ports:
+    - protocol: UDP
+      port: 1194
+      targetPort: 1194
+      nodePort: 32432
