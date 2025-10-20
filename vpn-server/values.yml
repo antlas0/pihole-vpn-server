@@ -1,4 +1,5 @@
 externalHost:
+vpnGateway: 
 
 statefulset:
   replicas: 1
