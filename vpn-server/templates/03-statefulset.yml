@@ -19,6 +19,54 @@ spec:
         app: "{{ .Release.Name }}-vpnserver"
     spec:
       initContainers:
+      - name: pihole-init
+        image: pihole/pihole:latest
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: TZ
+          value: '{{ .Values.statefulset.containers.pihole.env.TZ }}'
+        - name: FTLCONF_dns_upstreams
+          value: "1.1.1.1"
+        - name: FTLCONF_webserver_interface_theme
+          value: default-dark
+        - name: FTLCONF_dns_listeningMode
+          value: SINGLE
+        - name: FTLCONF_dns_interface
+          value: tun0
+        - name: FTLCONF_dns_cache_size
+          value: "10000"
+        - name: FTLCONF_dns_rateLimit_count
+          value: "1000"
+        - name: FTLCONF_dns_rateLimit_interval
+          value: "60"
+        - name: FTLCONF_dns_ignoreLocalhost
+          value: "false"
+        - name: FTLCONF_dns_domain
+          value: local
+        - name: FTLCONF_debug_api
+          value: "false"
+        - name: FTLCONF_files_gravity
+          value: /etc/pihole/db/gravity.db
+        resources:
+          requests:
+            memory: {{ .Values.statefulset.containers.pihole.resources.requests.memory }}
+            cpu: {{ .Values.statefulset.containers.pihole.resources.requests.cpu }}
+          limits:
+            memory: {{ .Values.statefulset.containers.pihole.resources.limits.memory }}
+            cpu: {{ .Values.statefulset.containers.pihole.resources.limits.cpu }}
+        command: ["bash", "/home/pihole/pihole_startup.sh"]
+        volumeMounts:
+        - name: "{{ .Release.Name }}-pihole-data"
+          mountPath: /etc/pihole/db
+          subPath: databases
+        - name: "{{ .Release.Name }}-pihole-data"
+          mountPath: /etc/pihole
+          subPath: config
+        - name: "{{ .Release.Name }}-pihole-data"
+          mountPath: /etc/dnsmasq.d
+          subPath: dnsmasq
+        - name: "{{ .Release.Name }}-pihole-setup"
+          mountPath: /home/pihole/
       - name: openvpn-init
         image: kylemanna/openvpn:latest
         imagePullPolicy: IfNotPresent
