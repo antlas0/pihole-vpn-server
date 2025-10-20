@@ -38,7 +38,7 @@ spec:
               echo "PKI already exists, skipping generation..."
               exit 0
             else
-              ovpn_genconfig -u "udp://{{ .Values.externalHost }}" -n 192.168.255.1 &&
+              ovpn_genconfig -u "udp://{{ .Values.externalHost }}" -n {{ .Values.vpnGateway }} &&
               ovpn_initpki nopass
             fi
         volumeMounts:
