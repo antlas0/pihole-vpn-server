@@ -1,5 +1,5 @@
-externalHost: 51.254.204.72
-vpnGateway: 192.168.255.1
+externalHost:
+vpnGateway: 
 
 statefulset:
   replicas: 1
