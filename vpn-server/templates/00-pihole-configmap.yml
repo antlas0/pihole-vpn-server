@@ -90,6 +90,7 @@ data:
         "https://raw.githubusercontent.com/Ultimate-Hosts-Blacklist/Ultimate.Hosts.Blacklist/refs/heads/master/hosts/hosts3"
         "https://raw.githubusercontent.com/Ultimate-Hosts-Blacklist/Ultimate.Hosts.Blacklist/refs/heads/master/hosts/hosts4"
         "https://raw.githubusercontent.com/Ultimate-Hosts-Blacklist/Ultimate.Hosts.Blacklist/refs/heads/master/hosts/hosts5"
+        "https://raw.githubusercontent.com/hagezi/dns-blocklists/main/hosts/ultimate.txt"
     )
 
     apk add sqlite
