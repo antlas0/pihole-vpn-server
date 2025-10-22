@@ -84,6 +84,12 @@ data:
         "https://raw.githubusercontent.com/hagezi/dns-blocklists/refs/heads/main/hosts/native.huawei.txt"
         "https://adaway.org/hosts.txt"
         "https://raw.githubusercontent.com/StevenBlack/hosts/refs/heads/master/data/hostsVN/hosts"
+        "https://raw.githubusercontent.com/Ultimate-Hosts-Blacklist/Ultimate.Hosts.Blacklist/refs/heads/master/hosts/hosts0"
+        "https://raw.githubusercontent.com/Ultimate-Hosts-Blacklist/Ultimate.Hosts.Blacklist/refs/heads/master/hosts/hosts1"
+        "https://raw.githubusercontent.com/Ultimate-Hosts-Blacklist/Ultimate.Hosts.Blacklist/refs/heads/master/hosts/hosts2"
+        "https://raw.githubusercontent.com/Ultimate-Hosts-Blacklist/Ultimate.Hosts.Blacklist/refs/heads/master/hosts/hosts3"
+        "https://raw.githubusercontent.com/Ultimate-Hosts-Blacklist/Ultimate.Hosts.Blacklist/refs/heads/master/hosts/hosts4"
+        "https://raw.githubusercontent.com/Ultimate-Hosts-Blacklist/Ultimate.Hosts.Blacklist/refs/heads/master/hosts/hosts5"
     )
 
     apk add sqlite
