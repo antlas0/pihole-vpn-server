@@ -83,6 +83,7 @@ data:
         "https://raw.githubusercontent.com/hagezi/dns-blocklists/refs/heads/main/hosts/native.lgwebos.txt"
         "https://raw.githubusercontent.com/hagezi/dns-blocklists/refs/heads/main/hosts/native.huawei.txt"
         "https://adaway.org/hosts.txt"
+        "https://raw.githubusercontent.com/StevenBlack/hosts/refs/heads/master/data/hostsVN/hosts"
     )
 
     apk add sqlite
