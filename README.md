@@ -15,7 +15,7 @@ $ helm install my-vpn-server -f values.yaml
 
 ## Values description
 ```yaml
-# the external hostname or ip address, in default case, Node ip address
+# the external hostname or ip address, in default case, host ip address
 externalHost:
 
 # ip address of the VPN gateway
