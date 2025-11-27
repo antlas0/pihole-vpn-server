@@ -1,4 +1,4 @@
-# vpn-server
+# pihole-vpn-server
 Helm chart deploying a VPN server embedding a PiHole instance. The VPN server K8s service is deployed as NodePort, meaning a few steps need to be performed on the host to make the service globally accessible.
 
 ### Things to know
