@@ -5,7 +5,7 @@ Helm chart deploying a VPN server embedding a PiHole instance.
 * The pihole-vpn-server service is by default deployed as NodePort.
 * A few steps need to be performed on the host to make the service globally accessible, depending on your setup.
 * Users have acccess to the PiHole panel generally at `192.168.255.1`, which is protected by an admin password.
-* Default ads lists are loaded at startup of the pihole-vpn-server instance, being persistnent accross restarts.  
+* Default ads lists are loaded at startup of the pihole-vpn-server instance, being persistent accross restarts.  
 * Client-to-client connections are effective for all clients connecting on the same pihole-vpn-server instance.
 
 # How to install
