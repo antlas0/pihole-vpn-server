@@ -52,3 +52,53 @@ service:
       targetPort: 1194
       nodePort: 32432
 ```
+
+## How to add a VPN user
+
+Assuming you have access to the host system as Helm would require, we can use Ansible to automate VPN user creation.
+These following Ansible tasks trigger commands executed inside the VPN server pod.
+```yaml
+- name: Add VPN server rules
+  hosts: host1
+  environment:
+    PATH: "{{ ansible_env.PATH }}:/usr/sbin/"
+  vars:
+    new_vpn_user: "username_created"
+    vpn_pod_name: "ovpn-pihole-pod"
+    namespace: "vpn-ns"
+  tasks:
+    - name: Create a random password
+      ansible.builtin.shell: |
+        tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 15
+      changed_when: true
+      register: random_password
+
+    - name: Print the random password
+      ansible.builtin.debug:
+        msg: "The random password is {{ random_password.stdout }}"
+
+    - name: Generate OpenVPN client key with password using expect
+      ansible.builtin.expect:
+        command: >
+          kubectl -n {{ namespace }} exec -it {{ vpn_pod_name }} -c openvpn --
+          easyrsa build-client-full {{ new_vpn_user }}
+        responses:
+          "Enter PEM pass phrase:": "{{ random_password.stdout }}"
+          "Verifying - Enter PEM pass phrase:": "{{ random_password.stdout }}"
+        echo: yes
+      register: openvpn_output
+
+    - name: Build OpenVPN client file
+      ansible.builtin.command: >
+        kubectl -n {{ namespace }} exec -it {{ vpn_pod_name }} -c openvpn -- ovpn_getclient {{ new_vpn_user }}
+      register: build_client_result
+      changed_when: "'Generating' in build_client_result.stdout"
+
+    - name: Save OpenVPN client build output to local file
+      ansible.builtin.copy:
+        content: "{{ build_client_result.stdout }}"
+        dest: "./openvpn_client_build_output_{{ new_vpn_user }}.ovpn"
+        mode: '0644'
+      delegate_to: localhost
+```
+
