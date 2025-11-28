@@ -10,7 +10,7 @@ Helm chart deploying a VPN server embedding a PiHole instance.
 
 # How to install
 ```bash
-$ helm install my-vpn-server -f values.yaml
+$ helm install installation-name ./vpn-server -f values.yaml
 ```
 
 ## Values description
